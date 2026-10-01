@@ -1,0 +1,80 @@
+{
+  "name": "model-hotspot-editor",
+  "version": "0.1.0",
+  "description": "Vue 3 GLB viewer, Vuetify 3 hotspot editor and optional Firebase persistence.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Dario Cavada",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./editor": {
+      "types": "./dist/types/editor.d.ts",
+      "import": "./dist/editor.js"
+    },
+    "./firebase": {
+      "types": "./dist/types/firebase.d.ts",
+      "import": "./dist/firebase.js"
+    },
+    "./local": {
+      "types": "./dist/types/local.d.ts",
+      "import": "./dist/local.js"
+    },
+    "./style.css": "./dist/model-hotspot-editor.css"
+  },
+  "scripts": {
+    "dev": "vite --config vite.demo.config.ts",
+    "build": "vite build --config vite.lib.config.ts && vue-tsc -p tsconfig.build.json",
+    "build:demo": "vite build --config vite.demo.config.ts",
+    "preview": "vite preview --config vite.demo.config.ts",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test": "tsc -p tsconfig.test.json && node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
+    "check": "npm run test && npm run typecheck && npm run build && npm run build:demo",
+    "prepack": "npm run build",
+    "prepare": "npm run build"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@google/model-viewer": "^4.1.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0",
+    "vuetify": "^3.9.0",
+    "firebase": "^11.0.0 || ^12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vuetify": {
+      "optional": true
+    },
+    "firebase": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.18.0",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "firebase": "^12.1.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.3",
+    "vue": "^3.5.18",
+    "vue-tsc": "^3.0.6",
+    "vuetify": "^3.9.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

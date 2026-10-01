@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    match /users/{uid}/models/{fileName} {
+      allow read: if owner(uid);
+      allow create, update: if owner(uid)
+        && fileName.matches('^[0-9a-f]{64}\\.glb$')
+        && request.resource.size > 0 && request.resource.size <= 104857600
+        && request.resource.contentType == 'model/gltf-binary'
+        && request.resource.metadata.sha256 + '.glb' == fileName;
+      allow delete: if owner(uid);
+    }
+  }
+}

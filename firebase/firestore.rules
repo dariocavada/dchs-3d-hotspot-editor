@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function validScene(id, uid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['scene', 'ownerId', 'revision', 'updatedAt'])
+        && d.ownerId == uid && d.updatedAt == request.time
+        && d.revision is int && d.revision > 0
+        && d.scene is map
+        && d.scene.keys().hasOnly(['schemaVersion', 'id', 'title', 'model', 'hotspots', 'initialCamera', 'revision', 'updatedAt'])
+        && d.scene.schemaVersion == 1 && d.scene.id == id
+        && d.scene.revision == d.revision
+        && d.scene.title is string && d.scene.title.size() <= 200
+        && d.scene.hotspots is list && d.scene.hotspots.size() <= 100
+        && d.scene.model is map
+        && d.scene.model.id is string && d.scene.model.id.matches('^[0-9a-f]{64}$')
+        && d.scene.model.byteLength is int && d.scene.model.byteLength > 0
+        && d.scene.model.byteLength <= 104857600;
+    }
+    match /users/{uid}/modelScenes/{sceneId} {
+      allow read: if owner(uid);
+      allow create: if owner(uid) && validScene(sceneId, uid) && request.resource.data.revision == 1;
+      allow update: if owner(uid) && validScene(sceneId, uid)
+        && request.resource.data.revision == resource.data.revision + 1;
+      allow delete: if owner(uid);
+    }
+  }
+}

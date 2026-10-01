@@ -1,0 +1,11 @@
+import { test } from 'node:test'; import assert from 'node:assert/strict';
+import { createScene, addHotspot, patchHotspot, removeHotspot, moveHotspot, importForModel } from '../.test-build/domain/actions.js';
+import { scene, model, hit, camera } from './fixtures.mjs';
+test('creates independent scene IDs', () => { assert.notEqual(createScene().id, createScene().id); assert.equal(createScene(model).model.id, model.id); });
+test('adds a hotspot without mutating the original scene', () => { const s = scene(); const next = addHotspot(s, hit, camera); assert.equal(s.hotspots.length, 1); assert.equal(next.hotspots.length, 2); assert.deepEqual(next.hotspots[1].camera, camera); });
+test('does not add without model', () => assert.throws(() => addHotspot(createScene(), hit), /modello/i));
+test('patches only chosen hotspot, not its ID', () => { const s = scene(); const next = patchHotspot(s, 'p1', { title: 'Nuovo', id: 'bad' }); assert.equal(next.hotspots[0].title, 'Nuovo'); assert.equal(next.hotspots[0].id, 'p1'); assert.equal(s.hotspots[0].title, 'Bordo'); });
+test('removes and reorders immutably', () => { const s = addHotspot(scene(), hit); const id = s.hotspots[1].id; assert.equal(moveHotspot(s, id, -1).hotspots[0].id, id); assert.equal(s.hotspots[0].id, 'p1'); assert.equal(removeHotspot(s, id).hotspots.length, 1); });
+test('reorder boundary is a no-op', () => { const s = scene(); assert.deepEqual(moveHotspot(s, 'p1', -1), s); });
+test('import requires the exact same asset hash', () => { const s = scene(); const other = scene(); other.model.id = 'b'.repeat(64); assert.throws(() => importForModel(other, s), /modello/i); });
+test('import keeps current ID and revision to avoid overwriting another document', () => { const s = { ...scene(), revision: 8 }; const incoming = { ...scene(), id: 'someone-else', revision: 100, title: 'Importato' }; const result = importForModel(incoming, s); assert.equal(result.id, 's1'); assert.equal(result.revision, 8); assert.equal(result.title, 'Importato'); });
